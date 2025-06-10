@@ -3,6 +3,36 @@ from datetime import datetime
 from typing import List, Optional
 
 
+# Risk report response schema
+class RiskReport(BaseModel):
+    trading_account_login: int
+    risk_signals: List[str]
+    risk_score: float
+    last_trade_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+# Webhook notification schema
+class WebhookNotification(BaseModel):
+    trading_account_login: int
+    risk_signals: List[str]
+    risk_score: float
+    last_trade_at: datetime
+
+
+# Configuration update schema
+class ConfigUpdate(BaseModel):
+    window_size: Optional[int] = None
+    win_ratio_threshold: Optional[float] = None
+    drawdown_threshold: Optional[float] = None
+    stop_loss_threshold: Optional[float] = None
+    risk_threshold: Optional[float] = None
+    initial_balance: Optional[float] = None
+    hft_duration: Optional[int] = None
+
+
 # Trade data schema (for potential POST endpoints)
 class TradeCreate(BaseModel):
     identifier: str
@@ -52,3 +82,4 @@ class RiskMetric(BaseModel):
 
     class Config:
         orm_mode = True
+
