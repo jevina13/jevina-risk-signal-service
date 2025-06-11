@@ -36,5 +36,10 @@ The service computes the following risk indicators:
 | GET    | `/risk-report/{account_login}`      | Risk score for a trading account        |
 | GET    | `/risk/user/{user_id}`              | Aggregated risk score for a user        |
 | GET    | `/risk/challenge/{challenge_id}`    | Aggregated risk score for a challenge   |
-| POST   | `/config/update`                    | Update thresholds dynamically           |
+| POST   | `/admin/update-config`              | Update thresholds dynamically           |
+
+---
+
+![image](https://github.com/user-attachments/assets/063f06ee-ee24-494c-87e1-00cbfe5a63fc)
+![image](https://github.com/user-attachments/assets/802fba72-b2e8-4ab9-a737-f6abe646f0e2)
 
