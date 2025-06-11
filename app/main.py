@@ -158,6 +158,26 @@ def get_risk_report(account_login: int, db: Session = Depends(get_db)):
     }
 
 
+@app.post("/update-config")
+def update_config(new_config: schemas.ConfigUpdate):
+    # Update configuration
+    if new_config.window_size is not None:
+        settings.WINDOW_SIZE = new_config.window_size
+    if new_config.win_ratio_threshold is not None:
+        settings.WIN_RATIO_THRESHOLD = new_config.win_ratio_threshold
+    if new_config.drawdown_threshold is not None:
+        settings.DRAWDOWN_THRESHOLD = new_config.drawdown_threshold
+    if new_config.stop_loss_threshold is not None:
+        settings.STOP_LOSS_THRESHOLD = new_config.stop_loss_threshold
+    if new_config.risk_threshold is not None:
+        settings.RISK_THRESHOLD = new_config.risk_threshold
+    if new_config.initial_balance is not None:
+        settings.INITIAL_BALANCE = new_config.initial_balance
+    if new_config.hft_duration is not None:
+        settings.HFT_DURATION = new_config.hft_duration
+
+    logger.info(f"Configuration updated: {new_config.model_dump()}")
+    return {"message": f"Configuration updated {new_config}"}
 
 
 @app.get("/health")
