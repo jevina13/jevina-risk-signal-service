@@ -133,9 +133,8 @@ def send_webhook(account_login: int, score: float, signals: list[str], last_trad
         response = requests.post(settings.WEBHOOK_URL, json=payload, timeout=5)
         response.raise_for_status()
         logger.info("Webhook sent - account %s (HTTP %s)", account_login, response.status_code)
-    except Exception:
-        logger.error("Webhook FAILED - account %s:\n%s", account_login, traceback.format_exc())
-
+    except Exception as e:
+        logger.error(f"Webhook FAILED - account{e}")
 
 # API Endpoints
 
