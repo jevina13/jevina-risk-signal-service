@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
+from .enums import Phase, Action
 
 
 # Risk report response schema
@@ -36,7 +37,7 @@ class ConfigUpdate(BaseModel):
 # Trade data schema (for potential POST endpoints)
 class TradeCreate(BaseModel):
     identifier: str
-    action: int
+    action: Action
     reason: int
     open_price: float
     close_price: float
@@ -61,7 +62,7 @@ class AccountCreate(BaseModel):
     login: int
     account_size: float
     platform: int
-    phase: int
+    phase: Phase
     user_id: int
     challenge_id: int
 
