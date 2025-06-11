@@ -2,7 +2,7 @@ import logging
 import traceback
 from contextlib import asynccontextmanager
 import asyncio
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Path
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Base, Account, Trade, RiskMetric
@@ -12,7 +12,7 @@ from app.config import settings
 import requests
 import app.models as models
 from datetime import datetime
-from fastapi import Path
+from fastapi.responses import RedirectResponse
 # Global task reference
 background_task = None
 
@@ -137,7 +137,11 @@ def send_webhook(account_login: int, score: float, signals: list[str], last_trad
     except Exception as e:
         logger.error(f"Webhook FAILED - account{e}")
 
+
 # API Endpoints
+@app.get("/", include_in_schema=False)
+def read_root():
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/risk-report/{account_login}", response_model=schemas.RiskReport)
