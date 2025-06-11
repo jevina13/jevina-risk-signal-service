@@ -1,20 +1,19 @@
 import pandas as pd
+import logging
 from app.models import Base, Account, Trade
 from app.database import engine
 
 
 def load_data():
-    
     # Create tables
     Base.metadata.create_all(bind=engine)
-    print("Initial")
+    logging.info("Initial")
 
     # Load accounts
     accounts_df = pd.read_csv("test_data/test_task_accounts.csv")
 
     accounts_df.to_sql('accounts', engine, if_exists='append', index=False)
     print(" accounts loaded ")
-    
     # Load trades
     trades_df = pd.read_csv("test_data/test_task_trades.csv")
 
