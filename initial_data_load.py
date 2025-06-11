@@ -1,5 +1,4 @@
 import pandas as pd
-import logging
 from app.models import Base, Account, Trade
 from app.database import engine
 
@@ -7,7 +6,7 @@ from app.database import engine
 def load_data():
     # Create tables
     Base.metadata.create_all(bind=engine)
-    logging.info("Initial")
+    print("Initial")
 
     # Load accounts
     accounts_df = pd.read_csv("test_data/test_task_accounts.csv")
