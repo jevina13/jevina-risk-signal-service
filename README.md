@@ -1,4 +1,5 @@
 Risk Signal Microservice
+---
 
 This is a FastAPI-based microservice that calculates and exposes risk metrics for trading accounts based on live and historical trade performance data.
 
@@ -27,3 +28,13 @@ The service computes the following risk indicators:
    - **Individual Risk Score** – Account-based score
    - **User Risk Score** – Aggregated across all accounts under a user
    - **Challenge Risk Score** – Aggregated across all accounts in a challenge
+
+
+| Method | Endpoint                            | Description                             |
+|--------|-------------------------------------|-----------------------------------------|
+| GET    | `/health`                           | Health check                            |
+| GET    | `/risk-report/{account_login}`      | Risk score for a trading account        |
+| GET    | `/risk/user/{user_id}`              | Aggregated risk score for a user        |
+| GET    | `/risk/challenge/{challenge_id}`    | Aggregated risk score for a challenge   |
+| POST   | `/config/update`                    | Update thresholds dynamically           |
+
