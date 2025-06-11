@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # SQLite database configuration
-SQLALCHEMY_DATABASE_URL = "sqlite:///./risk.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./risk_signal.db"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
@@ -23,7 +23,7 @@ Base = declarative_base()
 def get_db():
     """
     Dependency function to provide a database session
-    Usage in FastAPI:
+    Usage in FastAPI.
     """
     db = SessionLocal()
     try:

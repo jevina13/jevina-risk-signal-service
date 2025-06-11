@@ -11,7 +11,7 @@ class RiskReport(BaseModel):
     last_trade_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # Webhook notification schema
@@ -81,5 +81,12 @@ class RiskMetric(BaseModel):
     last_trade_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
+
+# Health check response
+class HealthCheck(BaseModel):
+    status: str
+    db_status: str
+    last_calculation: Optional[datetime] = None
+    accounts_processed: int
