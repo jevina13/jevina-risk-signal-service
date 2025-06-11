@@ -29,6 +29,7 @@ class ConfigUpdate(BaseModel):
     win_ratio_threshold: Optional[float] = None
     drawdown_threshold: Optional[float] = None
     stop_loss_threshold: Optional[float] = None
+    take_profit_threshold: Optional[float] = None
     risk_threshold: Optional[float] = None
     initial_balance: Optional[float] = None
     hft_duration: Optional[int] = None
@@ -75,6 +76,7 @@ class RiskMetric(BaseModel):
     profit_factor: float
     max_drawdown: float
     stop_loss_used: float
+    take_profit_used: float
     hft_count: int
     max_layering: int
     risk_score: float

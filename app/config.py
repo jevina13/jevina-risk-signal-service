@@ -16,6 +16,7 @@ class Settings:
     WIN_RATIO_THRESHOLD = 0.3
     DRAWDOWN_THRESHOLD = 0.5
     STOP_LOSS_THRESHOLD = 0.5
+    TAKE_PROFIT_THRESHOLD = 0.3
 
 
 settings = Settings()

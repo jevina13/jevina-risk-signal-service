@@ -44,6 +44,7 @@ class RiskMetric(Base):
     profit_factor = Column(Float)
     max_drawdown = Column(Float)
     stop_loss_used = Column(Float)
+    take_profit_used = Column(Float)
     hft_count = Column(Integer)
     max_layering = Column(Integer)
     risk_score = Column(Float)

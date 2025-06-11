@@ -30,14 +30,17 @@ def calculate_metrics(trades):
     # 4. Stop Loss Used
     stop_loss_used = len([t for t in trades if t.price_sl is not None]) / len(trades)
 
-    # 5. HFT Detection
+    # 5. Take Profit Used Percentage (NEW)
+    take_profit_used = len([t for t in trades if t.price_tp is not None]) / len(trades) if trades else 0
+
+    # 6. HFT Detection
     hft_count = 0
     for trade in trades:
         duration = trade.closed_at - trade.opened_at
         if duration.total_seconds() < settings.HFT_DURATION:
             hft_count += 1
 
-    # 6. Layering Detection
+    # 7. Layering Detection
     events = []
     for trade in trades:
         events.append((trade.opened_at, 1))   # Trade open
@@ -58,6 +61,7 @@ def calculate_metrics(trades):
         'profit_factor': profit_factor,
         'max_drawdown': max_drawdown,
         'stop_loss_used': stop_loss_used,
+        'take_profit_used': take_profit_used,
         'hft_count': hft_count,
         'max_layering': max_open,
         'last_trade_at': last_trade
@@ -72,6 +76,7 @@ def calculate_risk_score(metrics):
         'profit_factor': 0.15,
         'max_drawdown': 0.20,
         'stop_loss_used': 0.15,
+        'take_profit_used': 0.15,
         'hft_count': 0.15,
         'max_layering': 0.20
     }
@@ -82,6 +87,7 @@ def calculate_risk_score(metrics):
         'profit_factor': min(metrics['profit_factor'] * 10, 100) if metrics['profit_factor'] != float('inf') else 100,
         'max_drawdown': metrics['max_drawdown'] * 100,
         'stop_loss_used': metrics['stop_loss_used'] * 100,
+        'take_profit_used': metrics['take_profit_used'] * 100,
         'hft_count': min(metrics['hft_count'] * 10, 100),
         'max_layering': min(metrics['max_layering'] * 20, 100)
     }
@@ -103,5 +109,7 @@ def generate_risk_signals(metrics):
         signals.append("hft_signal")
     if metrics['stop_loss_used'] < settings.STOP_LOSS_THRESHOLD:
         signals.append("low_stop_loss_usage")
+    if metrics['take_profit_used'] < settings.TAKE_PROFIT_THRESHOLD:
+        signals.append("low_take_profit_usage")
 
     return signals
