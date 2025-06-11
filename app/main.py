@@ -1,18 +1,20 @@
-import logging
-import traceback
-from contextlib import asynccontextmanager
-import asyncio
+from app.models import Base, Account, Trade, RiskMetric
 from fastapi import FastAPI, Depends, HTTPException, Query, Path
+from fastapi.responses import RedirectResponse
+from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Base, Account, Trade, RiskMetric
 import app.schemas as schemas
 import app.utils as utils
 from app.config import settings
-import requests
 import app.models as models
 from datetime import datetime
-from fastapi.responses import RedirectResponse
+import requests
+import logging
+import traceback
+import asyncio
+
+
 # Global task reference
 background_task = None
 

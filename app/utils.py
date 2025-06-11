@@ -30,7 +30,7 @@ def calculate_metrics(trades):
     # 4. Stop Loss Used
     stop_loss_used = len([t for t in trades if t.price_sl is not None]) / len(trades)
 
-    # 5. Take Profit Used Percentage (NEW)
+    # 5. Take Profit Used Percentage
     take_profit_used = len([t for t in trades if t.price_tp is not None]) / len(trades) if trades else 0
 
     # 6. HFT Detection

@@ -1,5 +1,5 @@
-from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # SQLite database configuration
@@ -23,7 +23,6 @@ Base = declarative_base()
 def get_db():
     """
     Dependency function to provide a database session
-    Usage in FastAPI.
     """
     db = SessionLocal()
     try:

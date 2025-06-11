@@ -35,7 +35,7 @@ class ConfigUpdate(BaseModel):
     hft_duration: Optional[int] = None
 
 
-# Trade data schema (for potential POST endpoints)
+# Trade data schema
 class TradeCreate(BaseModel):
     identifier: str
     action: Action
