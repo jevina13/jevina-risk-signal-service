@@ -12,7 +12,7 @@ from app.config import settings
 import requests
 import app.models as models
 from datetime import datetime
-
+from fastapi import Path
 # Global task reference
 background_task = None
 
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
         from app.database import engine
         # from app.models import Base
         Base.metadata.create_all(bind=engine)
-        logger.info("DB schema ready - launching background task …")
+        logger.info("DB schema ready - launching background task")
 
         # Startup
         global background_task
@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
         raise
     # Shutdown
     finally:
-        logger.info("Shutting down - cancelling background task …")
+        logger.info("Shutting down - cancelling background task")
         if background_task and not background_task.done():
             background_task.cancel()
             try:
@@ -101,6 +101,7 @@ def calculate_risk_metrics():
                 profit_factor=metrics['profit_factor'],
                 max_drawdown=metrics['max_drawdown'],
                 stop_loss_used=metrics['stop_loss_used'],
+                take_profit_used=metrics['take_profit_used'],
                 hft_count=metrics['hft_count'],
                 max_layering=metrics['max_layering'],
                 risk_score=risk_score,
@@ -168,6 +169,8 @@ def update_config(new_config: schemas.ConfigUpdate):
         settings.DRAWDOWN_THRESHOLD = new_config.drawdown_threshold
     if new_config.stop_loss_threshold is not None:
         settings.STOP_LOSS_THRESHOLD = new_config.stop_loss_threshold
+    if new_config.take_profit_threshold is not None:
+        settings.TAKE_PROFIT_THRESHOLD = new_config.take_profit_threshold
     if new_config.risk_threshold is not None:
         settings.RISK_THRESHOLD = new_config.risk_threshold
     if new_config.initial_balance is not None:
@@ -177,6 +180,62 @@ def update_config(new_config: schemas.ConfigUpdate):
 
     logger.info(f"Configuration updated: {new_config.model_dump()}")
     return {"message": f"Configuration updated {new_config}"}
+
+
+@app.get("/risk/user/{user_id}", response_model=schemas.RiskReport)
+def get_user_risk_report(user_id: int = Path(...), db: Session = Depends(get_db)):
+    accounts = db.query(models.Account).filter_by(user_id=user_id).all()
+    if not accounts:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    account_logins = [a.login for a in accounts]
+    trades = (db.query(models.Trade)
+                .filter(models.Trade.trading_account_login.in_(account_logins))
+                .order_by(models.Trade.closed_at.desc())
+                .limit(settings.WINDOW_SIZE)
+                .all())
+
+    if not trades:
+        raise HTTPException(status_code=404, detail="No trades found for user")
+
+    metrics = utils.calculate_metrics(trades)
+    risk_score = utils.calculate_risk_score(metrics)
+    risk_signals = utils.generate_risk_signals(metrics)
+
+    return {
+        "trading_account_login": user_id,
+        "risk_signals": risk_signals,
+        "risk_score": risk_score,
+        "last_trade_at": metrics['last_trade_at']
+    }
+
+
+@app.get("/risk/challenge/{challenge_id}", response_model=schemas.RiskReport)
+def get_challenge_risk_report(challenge_id: int = Path(...), db: Session = Depends(get_db)):
+    accounts = db.query(models.Account).filter_by(challenge_id=challenge_id).all()
+    if not accounts:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+
+    account_logins = [a.login for a in accounts]
+    trades = (db.query(models.Trade)
+                .filter(models.Trade.trading_account_login.in_(account_logins))
+                .order_by(models.Trade.closed_at.desc())
+                .limit(settings.WINDOW_SIZE)
+                .all())
+
+    if not trades:
+        raise HTTPException(status_code=404, detail="No trades found for challenge")
+
+    metrics = utils.calculate_metrics(trades)
+    risk_score = utils.calculate_risk_score(metrics)
+    risk_signals = utils.generate_risk_signals(metrics)
+
+    return {
+        "trading_account_login": challenge_id,
+        "risk_signals": risk_signals,
+        "risk_score": risk_score,
+        "last_trade_at": metrics['last_trade_at']
+    }
 
 
 @app.get("/health")
