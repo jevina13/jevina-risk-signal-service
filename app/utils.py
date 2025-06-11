@@ -1,4 +1,3 @@
-from datetime import timedelta
 from app.config import settings
 
 
