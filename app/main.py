@@ -2,7 +2,7 @@ import logging
 import traceback
 from contextlib import asynccontextmanager
 import asyncio
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Base, Account, Trade, RiskMetric
@@ -139,6 +139,7 @@ def send_webhook(account_login: int, score: float, signals: list[str], last_trad
 
 # API Endpoints
 
+
 @app.get("/risk-report/{account_login}", response_model=schemas.RiskReport)
 def get_risk_report(account_login: int, db: Session = Depends(get_db)):
     # Get latest risk metric for account
@@ -148,18 +149,28 @@ def get_risk_report(account_login: int, db: Session = Depends(get_db)):
                  .first())
 
     if not risk_metric:
+        logger.warning(f"Account not found: {account_login}")
         raise HTTPException(status_code=404, detail="Account not found")
 
-    return {
+    response = {
         "trading_account_login": account_login,
         "risk_signals": risk_metric.risk_signals.split(",") if risk_metric.risk_signals else [],
         "risk_score": risk_metric.risk_score,
         "last_trade_at": risk_metric.last_trade_at
     }
 
+    logger.info(f"GET /risk-report/{account_login} - {response}")
+    return response
 
-@app.post("/update-config")
-def update_config(new_config: schemas.ConfigUpdate):
+
+@app.post("/admin/update-config")
+def update_config(new_config: schemas.ConfigUpdate,
+            admin_token: str = Query(..., description="Admin token")):
+
+    if admin_token != "secure_admin_token":
+        logger.warning(f"User Unauthorized : Wrong token! {admin_token}")
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
     # Update configuration
     if new_config.window_size is not None:
         settings.WINDOW_SIZE = new_config.window_size
@@ -186,6 +197,7 @@ def update_config(new_config: schemas.ConfigUpdate):
 def get_user_risk_report(user_id: int = Path(...), db: Session = Depends(get_db)):
     accounts = db.query(models.Account).filter_by(user_id=user_id).all()
     if not accounts:
+        logger.warning(f"User ID not found {user_id}.")
         raise HTTPException(status_code=404, detail="User not found")
 
     account_logins = [a.login for a in accounts]
@@ -196,24 +208,29 @@ def get_user_risk_report(user_id: int = Path(...), db: Session = Depends(get_db)
                 .all())
 
     if not trades:
+        logger.warning(f"No trades found for User ID {user_id}. Accounts: {account_logins}")
         raise HTTPException(status_code=404, detail="No trades found for user")
 
     metrics = utils.calculate_metrics(trades)
     risk_score = utils.calculate_risk_score(metrics)
     risk_signals = utils.generate_risk_signals(metrics)
 
-    return {
+    response = {
         "trading_account_login": user_id,
         "risk_signals": risk_signals,
         "risk_score": risk_score,
         "last_trade_at": metrics['last_trade_at']
     }
 
+    logger.info(f"GET /risk/user/{user_id} - {response}")
+    return response
+
 
 @app.get("/risk/challenge/{challenge_id}", response_model=schemas.RiskReport)
 def get_challenge_risk_report(challenge_id: int = Path(...), db: Session = Depends(get_db)):
     accounts = db.query(models.Account).filter_by(challenge_id=challenge_id).all()
     if not accounts:
+        logger.warning(f"Challenge ID not found {challenge_id}.")
         raise HTTPException(status_code=404, detail="Challenge not found")
 
     account_logins = [a.login for a in accounts]
@@ -224,23 +241,30 @@ def get_challenge_risk_report(challenge_id: int = Path(...), db: Session = Depen
                 .all())
 
     if not trades:
+        logger.warning(f"No trades found for Challenge ID {challenge_id}. Accounts: {account_logins}")
         raise HTTPException(status_code=404, detail="No trades found for challenge")
 
     metrics = utils.calculate_metrics(trades)
     risk_score = utils.calculate_risk_score(metrics)
     risk_signals = utils.generate_risk_signals(metrics)
 
-    return {
+    response = {
         "trading_account_login": challenge_id,
         "risk_signals": risk_signals,
         "risk_score": risk_score,
         "last_trade_at": metrics['last_trade_at']
     }
 
+    logger.info(f"GET /risk/challenge/{challenge_id} - {response}")
+    return response
+
 
 @app.get("/health")
 def health_check():
-    return {
+    response = {
         "status": "ok",
         "background_task": "running" if background_task and not background_task.done() else "inactive"
     }
+
+    logger.info(f"GET /health/  - {response}")
+    return response
