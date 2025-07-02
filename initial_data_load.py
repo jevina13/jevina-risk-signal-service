@@ -4,7 +4,7 @@ from app.database import engine
 import pandas as pd
 import os
 
-load_dotenv()
+load_dotenv(".env")
 
 # Get CSV paths from environment
 ACCOUNTS_CSV = os.getenv("ACCOUNTS_CSV_PATH")
